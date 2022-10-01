@@ -1,0 +1,7 @@
+---
+title: "p8105_hw2_js6177"
+author: "Jiayi Shi"
+date: "2022-10-01"
+output: github_document
+---
+
