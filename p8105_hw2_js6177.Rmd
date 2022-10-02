@@ -13,7 +13,7 @@ library(tidyverse)
 
 ### Read and clean data
 
-The code below read and do some cleaning after viewing the original data.
+The code below reads and cleans the data.
 ```{r}
 transit_data = read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
@@ -58,9 +58,13 @@ transit_data_ref =
 dist_station_ref = distinct(transit_data_ref, line, station_name, .keep_all = T)
 ```
 
-* There are `r nrow(filter(dist_station_ref,route_name=="A"))` stations serving the A train, and `r nrow(filter(dist_station_ref,route_name=="A", ada_compliance==T))` of them are ADA compliant.
+There are `r nrow(filter(dist_station_ref,route_name=="A"))` stations serving the A train, and `r nrow(filter(dist_station_ref,route_name=="A", ada_compliance==T))` of them are ADA compliant.
 
 ## Problem 2
+
+### Read and clean data
+
+The code below reads and cleans the Mr. Trash Wheel sheet.
 
 ```{r}
 mr_trash = readxl::read_excel(
@@ -68,8 +72,88 @@ mr_trash = readxl::read_excel(
   sheet = "Mr. Trash Wheel",
   range = "A2:N535"
   ) %>% 
-  na.omit()
+  janitor::clean_names() %>% 
+  na.omit() %>% 
+  mutate(
+    sports_balls = as.integer(round(sports_balls,0))
+  )
 ```
 
+Read and clean the Professor Trash Wheel sheet.
 
+```{r}
+prof_trash = readxl::read_excel(
+  path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  sheet = "Professor Trash Wheel",
+  range = "A2:N117"
+  ) %>% 
+  janitor::clean_names() %>% 
+  na.omit() %>% 
+  mutate(
+    sports_balls = as.integer(round(sports_balls,0))
+  )
+```
+
+### Combine datasets
+
+I add an additional variable `trash_wheel_name` to specify which trach wheel is which and pull the column first in each dataset. In order to combine these two datasets, I convert the column type of `dumpster` in `mr_trash` from character to number. 
+
+I try to plot the datasets just for fun, and I notice that there is a mistake in one observation of `mr_trash`. The date should be "2020-01-20" rather than "1900-01-20". I correct it before the combination.
+
+```{r}
+mr_trash = mutate(mr_trash, trash_wheel_name = "mr.") %>% 
+  select(trash_wheel_name,everything()) %>% 
+  mutate(
+    dumpster = as.numeric(dumpster),
+    date = as.character(date)
+    ) %>% 
+  mutate(date = replace(date, date=="1900-01-20","2020-01-20")) %>% 
+  mutate(date = as.POSIXct(date))
+
+prof_trash = mutate(prof_trash, trash_wheel_name = "professor") %>% 
+  select(trash_wheel_name,everything())
+```
+
+The following code full join the two dataset into a single tidy dataset called `trash_wheel`.
+
+```{r}
+trash_wheel = full_join(mr_trash, prof_trash)
+```
+
+* The dataset `trash_wheel` contains `r nrow(trash_wheel)` observations and `r ncol(trash_wheel)` variables, including the name of Trash Wheel, dumpster number, date of trash collection, the weight and volume of the total trash, and the number of 8 types of trash in the associated dumpster. 
+
+* The total weight of trash collected by Professor Trash Wheel is `r sum(filter(trash_wheel, trash_wheel_name == "professor")$weight_tons)` tons.
+
+* The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(filter(trash_wheel, trash_wheel_name == "mr.", year == 2020)$sports_balls)`.
+
+## Problem 3
+
+### clean data `pols`
+
+```{r}
+pols = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>% 
+  separate(mon, into = c("year","month","day"),sep = "-") %>% 
+  mutate(month = as.integer(month)) %>% 
+  mutate(
+    month = month.name[month],
+    president = ifelse(prez_dem==1,"dem","gop")
+    ) %>% 
+  select(-prez_dem,-prez_gop,-day)
+```
+
+### clean data `unemp`
+
+```{r}
+unemp = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
+  janitor::clean_names()
+
+```
+
+### clean data `snp`
+
+```{r}
+snp = read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
+  janitor::clean_names()
+```
 
