@@ -60,3 +60,16 @@ dist_station_ref = distinct(transit_data_ref, line, station_name, .keep_all = T)
 
 * There are `r nrow(filter(dist_station_ref,route_name=="A"))` stations serving the A train, and `r nrow(filter(dist_station_ref,route_name=="A", ada_compliance==T))` of them are ADA compliant.
 
+## Problem 2
+
+```{r}
+mr_trash = readxl::read_excel(
+  path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  sheet = "Mr. Trash Wheel",
+  range = "A2:N535"
+  ) %>% 
+  na.omit()
+```
+
+
+
