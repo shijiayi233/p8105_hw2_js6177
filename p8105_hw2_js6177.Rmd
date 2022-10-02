@@ -5,3 +5,41 @@ date: "2022-10-01"
 output: github_document
 ---
 
+```{r message=FALSE}
+library(tidyverse)
+```
+
+## Problem 1
+
+### Read and clean data
+
+The code below read and do some cleaning after viewing the original data.
+```{r}
+transit_data = read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
+  janitor::clean_names() %>% 
+  select(2:5, starts_with("route"), entry, vending, entrance_type, ada_compliance = ada) %>% 
+  mutate(
+    entry = recode(entry,"YES"=TRUE,"NO"=FALSE),
+  ) %>%
+  mutate_at(c("route8","route9","route10","route11"),as.character) %>% 
+  pivot_longer(
+    starts_with("route"),
+    names_to = NULL,
+    names_prefix = "route",
+    values_to = "route_served",
+    values_drop_na = T
+  ) %>%
+  select(1:4,route_served,everything()) %>% 
+  distinct()
+```
+
+After loading the data, I clean the variables' names using `janitor::clean_names()` and select the required variables for a new dataset `transit_data`, including `line`, `station_name`, `station_latitude`, `station_longitude`, `route1-11`, `entry`, `vending`, `entrance_type`, and `ada_compliance`. Next, I convert the `entry` from character (`YES` & `NO`) to a logical variable (`TRUE` & `FALSE`) and convert the `route8-11` from numeric to character variables as `route1-7`. I then use `pivot_longer` to retain only the name of routes served in each station, dropping the original `route1-11` variables and creating a new variable named `route_served`. Finally, I relocate columns as the problem specified and drop repeated rows in my dataset. The dimention of the resulting dataset is `r dim(transit_data)[1]` x `r dim(transit_data)[2]`. These data are tidy from my perspective.
+
+
+```{r}
+dist_station = distinct(transit_data, line, station_name, .keep_all = T)
+```
+
+* There are `r nrow(dist_station)` distinct stations.  
+* `r nrow(filter(dist_station,ada_compliance==T))` stations are ADA compliant. 
+
