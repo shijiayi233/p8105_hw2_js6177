@@ -128,32 +128,78 @@ trash_wheel = full_join(mr_trash, prof_trash)
 
 ## Problem 3
 
-### clean data `pols`
+### clean dataset `pols`
+
+I read the data in file `pols-month.csv`, clean the variable name, separate variable `mon` into integer variables `year`, `month` and `day`. I then replace month number with month abbreviation and convert it to lower case. I create a `president` variable taking values `gop` and `dem`, and remove `prez_dem`, `prez_gop` and `day` variables.
 
 ```{r}
 pols = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>%
   janitor::clean_names() %>% 
   separate(mon, into = c("year","month","day"),sep = "-") %>% 
-  mutate(month = as.integer(month)) %>% 
   mutate(
-    month = month.name[month],
+    year = as.integer(year),
+    month = as.integer(month),
+    day = as.integer(day)
+    ) %>% 
+  mutate(
+    month = str_to_lower(month.abb[month]),
     president = ifelse(prez_dem==1,"dem","gop")
     ) %>% 
   select(-prez_dem,-prez_gop,-day)
 ```
 
-### clean data `unemp`
+### clean dataset `snp`
 
-```{r}
-unemp = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
-  janitor::clean_names()
-
-```
-
-### clean data `snp`
+I read the data in file `snp.csv`, clean the variable name, separate variable `date` into integer variables `year`, `month` and `day`. I then arrange the dataset according to `year` and `month`, and next replace month number with month abbreviation and convert it to lower case. Finally, I organize the dataset so that `year` and `month` are the leading columns.
 
 ```{r}
 snp = read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  separate(date, into = c("year","month","day"),sep = "/") %>% 
+  mutate(
+    year = as.integer(year)+2000,
+    month = as.integer(month),
+    day = as.integer(day)
+    ) %>% 
+  arrange(year,month) %>% 
+  mutate(month = str_to_lower(month.abb[month])) %>% 
+  select(year,month,day,close)
 ```
+
+### clean dataset `unemp`
+
+I swich dataset from wide to long format using `pivot_longer()`, creating two new variables: `month` taking the value of month abbreviation in lower case (the original column names) and `percent_of_unemp` taking the value of percent of unemployment.
+
+```{r}
+unemp = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = "month",
+    values_to = "percent_of_unemp"
+  )
+```
+
+### Join three datasets
+
+I join the three dataset based on `year` and `month`.
+
+```{r}
+snp_to_pols = left_join(pols,snp,by = c("year","month"))
+result = left_join(snp_to_pols,unemp,by = c("year","month"))
+```
+
+### Description of datasets
+
+* `pols`  
+The dimension of the dataset is `r dim(pols)[1]` x `r dim(pols)[2]`, with year ranging from `r min(pols$year)` to `r max(pols$year)`. It contains `r ncol(pols)` variables: `r colnames(pols)`, meaning the year and month of the count and the number of republican/democratic governors/senators/representatives on the associated date.
+
+* `snp`  
+The dimension of the dataset is `r dim(snp)[1]` x `r dim(snp)[2]`, with year ranging from `r min(snp$year)` to `r max(snp$year)`. It contains `r ncol(snp)` variables: `r colnames(snp)`, meaning the year and month of that observation and the closing values of the S&P stock index on the associated date.
+
+* `unemp`  
+The dimension of the dataset is `r dim(unemp)[1]` x `r dim(unemp)[2]`, with year ranging from `r min(unemp$year)` to `r max(unemp$year)`. It contains `r ncol(unemp)` variables: `r colnames(unemp)`, meaning the year and month of that measurement and percentage of unemployment in that associated year and month.
+
+* `result`  
+The dimension of the dataset is `r dim(result)[1]` x `r dim(result)[2]`, with year ranging from `r min(result$year)` to `r max(result$year)`. It contains `r ncol(result)` variables: `r colnames(result)`.
 
