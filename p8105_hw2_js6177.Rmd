@@ -64,17 +64,18 @@ There are `r nrow(filter(dist_station_ref,route_name=="A"))` stations serving th
 
 ### Read and clean data
 
-The code below imports and cleans data from the `Mr. Trash Wheel` sheet in file `Trash-Wheel-Collection-Totals-7-2020-2.xlsx`. The process begins with data import, update variable names, omit rows that do not include dumpster-specific data, round the number of sports balls to the nearest integer and converts the result to an integer variable. As part of data import, I specify cell range for reading so as to omit non-data entries. 
+The code below imports and cleans data from the `Mr. Trash Wheel` sheet in file `Trash-Wheel-Collection-Totals-7-2020-2.xlsx`. The process begins with data import, update variable names, omit rows that do not include dumpster-specific data, convert `year` to numberic variable, round the number of sports balls to the nearest integer and converts the result to an integer variable. As part of data import, I specify cell range for reading so as to omit non-data entries. 
 
 ```{r}
 mr_trash = readxl::read_excel(
-  path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  path = "data/Trash Wheel Collection Data.xlsx",
   sheet = "Mr. Trash Wheel",
-  range = "A2:N535"
+  range = "A2:N550"
   ) %>% 
   janitor::clean_names() %>% 
   na.omit() %>% 
   mutate(
+    year = as.numeric(year),
     sports_balls = as.integer(round(sports_balls,0))
   )
 ```
@@ -83,15 +84,12 @@ The next code chunk is a similar process to read and clean the `Professor Trash 
 
 ```{r}
 prof_trash = readxl::read_excel(
-  path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  path = "data/Trash Wheel Collection Data.xlsx",
   sheet = "Professor Trash Wheel",
-  range = "A2:N117"
+  range = "A2:M97"
   ) %>% 
   janitor::clean_names() %>% 
-  na.omit() %>% 
-  mutate(
-    sports_balls = as.integer(round(sports_balls,0))
-  )
+  na.omit()
 ```
 
 ### Combine datasets
