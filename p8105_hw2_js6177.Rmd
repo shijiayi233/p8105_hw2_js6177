@@ -64,7 +64,7 @@ There are `r nrow(filter(dist_station_ref,route_name=="A"))` stations serving th
 
 ### Read and clean data
 
-The code below reads and cleans the Mr. Trash Wheel sheet.
+The code below imports and cleans data from the `Mr. Trash Wheel` sheet in file `Trash-Wheel-Collection-Totals-7-2020-2.xlsx`. The process begins with data import, update variable names, omit rows that do not include dumpster-specific data, round the number of sports balls to the nearest integer and converts the result to an integer variable. As part of data import, I specify cell range for reading so as to omit non-data entries. 
 
 ```{r}
 mr_trash = readxl::read_excel(
@@ -79,7 +79,7 @@ mr_trash = readxl::read_excel(
   )
 ```
 
-Read and clean the Professor Trash Wheel sheet.
+The next code chunk is a similar process to read and clean the `Professor Trash Wheel` sheet.
 
 ```{r}
 prof_trash = readxl::read_excel(
@@ -114,7 +114,7 @@ prof_trash = mutate(prof_trash, trash_wheel_name = "professor") %>%
   select(trash_wheel_name,everything())
 ```
 
-The following code full join the two dataset into a single tidy dataset called `trash_wheel`.
+The following code full join the two dataset into a single tidy dataset named `trash_wheel`.
 
 ```{r}
 trash_wheel = full_join(mr_trash, prof_trash)
@@ -130,7 +130,7 @@ trash_wheel = full_join(mr_trash, prof_trash)
 
 ### clean dataset `pols`
 
-I read the data in file `pols-month.csv`, clean the variable name, separate variable `mon` into integer variables `year`, `month` and `day`. I then replace month number with month abbreviation and convert it to lower case. I create a `president` variable taking values `gop` and `dem`, and remove `prez_dem`, `prez_gop` and `day` variables.
+I read the data in file `pols-month.csv`, update the variable name, separate variable `mon` into integer variables `year`, `month` and `day`. I then replace month number with month abbreviation and convert it to lower case. I create a `president` variable taking values `gop` and `dem`, and remove `prez_dem`, `prez_gop` and `day` variables.
 
 ```{r}
 pols = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>%
@@ -150,7 +150,7 @@ pols = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>%
 
 ### clean dataset `snp`
 
-I read the data in file `snp.csv`, clean the variable name, separate variable `date` into integer variables `year`, `month` and `day`. I then arrange the dataset according to `year` and `month`, and next replace month number with month abbreviation and convert it to lower case. Finally, I organize the dataset so that `year` and `month` are the leading columns.
+I read the data in file `snp.csv`, update the variable name, separate variable `date` into integer variables `year`, `month` and `day`. I then arrange the dataset according to `year` and `month` in ascending order. Next,I replace month number with month abbreviation and convert it to lower case. Finally, I organize the dataset so that `year` and `month` are the leading columns.
 
 ```{r}
 snp = read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
@@ -168,7 +168,7 @@ snp = read_csv("data/fivethirtyeight_datasets/snp.csv") %>%
 
 ### clean dataset `unemp`
 
-I swich dataset from wide to long format using `pivot_longer()`, creating two new variables: `month` taking the value of month abbreviation in lower case (the original column names) and `percent_of_unemp` taking the value of percent of unemployment.
+I read the data in file `unemployment.csv` and update the variable name. I then convert month variables from wide to long format using `pivot_longer()`, creating two new variables: `month` taking the value of month abbreviation in lower case (the original column names) and `percent_of_unemp` taking the value of percent of unemployment.
 
 ```{r}
 unemp = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
@@ -182,7 +182,7 @@ unemp = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>%
 
 ### Join three datasets
 
-I join the three dataset based on `year` and `month`.
+I merging the three dataset based on `year` and `month` into a single dataset named `result`.
 
 ```{r}
 snp_to_pols = left_join(pols,snp,by = c("year","month"))
