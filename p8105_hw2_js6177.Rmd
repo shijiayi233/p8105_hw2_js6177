@@ -70,10 +70,9 @@ The code below imports and cleans data from the `Mr. Trash Wheel` sheet in file 
 mr_trash = readxl::read_excel(
   path = "data/Trash Wheel Collection Data.xlsx",
   sheet = "Mr. Trash Wheel",
-  range = "A2:N550"
+  range = "A2:N549"
   ) %>% 
   janitor::clean_names() %>% 
-  na.omit() %>% 
   mutate(
     year = as.numeric(year),
     sports_balls = as.integer(round(sports_balls,0))
@@ -86,10 +85,9 @@ The next code chunk is a similar process to read and clean the `Professor Trash 
 prof_trash = readxl::read_excel(
   path = "data/Trash Wheel Collection Data.xlsx",
   sheet = "Professor Trash Wheel",
-  range = "A2:M97"
+  range = "A2:M96"
   ) %>% 
-  janitor::clean_names() %>% 
-  na.omit()
+  janitor::clean_names()
 ```
 
 ### Combine datasets
